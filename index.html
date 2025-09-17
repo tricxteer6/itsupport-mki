@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Manajemen Perusahaan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .tab-active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-lg border-b-4 border-indigo-500">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-6">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
+                        <span class="text-white font-bold text-lg">SM</span>
+                    </div>
+                    <h1 class="text-2xl font-bold text-gray-900">Sistem Manajemen</h1>
+                </div>
+                <div class="text-sm text-gray-600">
+                    <span id="currentDate"></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex space-x-8">
+                <button onclick="showTab('karyawan')" id="tab-karyawan" class="tab-active text-white px-6 py-4 text-sm font-medium rounded-t-lg transition-all duration-200">
+                    👥 Data Karyawan
+                </button>
+                <button onclick="showTab('stok')" id="tab-stok" class="bg-gray-100 text-gray-700 hover:bg-gray-200 px-6 py-4 text-sm font-medium rounded-t-lg transition-all duration-200">
+                    📦 Stok Barang
+                </button>
+                <button onclick="showTab('laporan')" id="tab-laporan" class="bg-gray-100 text-gray-700 hover:bg-gray-200 px-6 py-4 text-sm font-medium rounded-t-lg transition-all duration-200">
+                    📊 Laporan Pekerjaan
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Data Karyawan Tab -->
+        <div id="content-karyawan" class="fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold text-gray-900">Data Karyawan</h2>
+                <button onclick="showAddEmployeeModal()" class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 shadow-lg">
+                    ➕ Tambah Karyawan
+                </button>
+            </div>
+
+            <!-- Filter Divisi -->
+            <div class="mb-6">
+                <select id="divisiFilter" onchange="filterByDivisi()" class="bg-white border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    <option value="">Semua Divisi</option>
+                    <option value="IT">IT</option>
+                    <option value="HR">HR</option>
+                    <option value="Finance">Finance</option>
+                    <option value="Marketing">Marketing</option>
+                    <option value="Operations">Operations</option>
+                </select>
+            </div>
+
+            <!-- Karyawan Cards -->
+            <div id="employeeCards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Cards will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Stok Barang Tab -->
+        <div id="content-stok" class="hidden fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold text-gray-900">Stok Barang</h2>
+                <button onclick="showAddItemModal()" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 shadow-lg">
+                    ➕ Tambah Barang
+                </button>
+            </div>
+
+            <!-- Stok Table -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Barang</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stok</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stockTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Rows will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Laporan Pekerjaan Tab -->
+        <div id="content-laporan" class="hidden fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold text-gray-900">Laporan Pekerjaan</h2>
+                <button onclick="showAddReportModal()" class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 shadow-lg">
+                    ➕ Tambah Laporan
+                </button>
+            </div>
+
+            <!-- Laporan Table -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Planning</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PIC</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trouble</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Proses</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Rows will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Add Employee -->
+    <div id="employeeModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-6 text-gray-900">Tambah Karyawan Baru</h3>
+            <form id="employeeForm" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap</label>
+                        <input type="text" id="empName" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Divisi</label>
+                        <select id="empDivision" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" required>
+                            <option value="">Pilih Divisi</option>
+                            <option value="IT">IT</option>
+                            <option value="HR">HR</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Operations">Operations</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Posisi</label>
+                        <input type="text" id="empPosition" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <input type="email" id="empEmail" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Telepon</label>
+                        <input type="tel" id="empPhone" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Bergabung</label>
+                        <input type="date" id="empJoinDate" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Aset yang Dipegang</label>
+                    <textarea id="empAssets" rows="3" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="Contoh: Laptop Dell XPS 13, Mouse Wireless, Headset"></textarea>
+                </div>
+                <div class="flex justify-end space-x-4 pt-4">
+                    <button type="button" onclick="closeEmployeeModal()" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-lg hover:from-indigo-600 hover:to-indigo-700 transition-all">
+                        Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Add Item -->
+    <div id="itemModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-8 max-w-md w-full mx-4">
+            <h3 class="text-2xl font-bold mb-6 text-gray-900">Tambah Barang Baru</h3>
+            <form id="itemForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nama Barang</label>
+                    <input type="text" id="itemName" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tipe Barang</label>
+                    <select id="itemType" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                        <option value="">Pilih Tipe</option>
+                        <option value="Elektronik">Elektronik</option>
+                        <option value="Furniture">Furniture</option>
+                        <option value="Alat Tulis">Alat Tulis</option>
+                        <option value="Konsumsi">Konsumsi</option>
+                        <option value="Lainnya">Lainnya</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah Stok</label>
+                    <input type="number" id="itemStock" min="0" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                </div>
+                <div class="flex justify-end space-x-4 pt-4">
+                    <button type="button" onclick="closeItemModal()" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all">
+                        Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Add Report -->
+    <div id="reportModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-6 text-gray-900">Tambah Laporan Pekerjaan</h3>
+            <form id="reportForm" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal</label>
+                        <input type="date" id="reportDate" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">PIC</label>
+                        <input type="text" id="reportPIC" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Planning</label>
+                    <textarea id="reportPlanning" rows="3" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" required></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Trouble</label>
+                    <textarea id="reportTrouble" rows="3" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
+                    <textarea id="reportDescription" rows="3" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Status Proses</label>
+                    <select id="reportStatus" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                        <option value="Belum">Belum</option>
+                        <option value="Proses">Proses</option>
+                        <option value="Sudah">Sudah</option>
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-4 pt-4">
+                    <button type="button" onclick="closeReportModal()" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all">
+                        Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Data Storage
+        let employees = [
+            {
+                id: 1,
+                name: "Ahmad Rizki",
+                division: "IT",
+                position: "Software Developer",
+                email: "ahmad.rizki@company.com",
+                phone: "081234567890",
+                joinDate: "2023-01-15",
+                assets: "Laptop Dell XPS 13, Mouse Wireless, Headset Gaming"
+            },
+            {
+                id: 2,
+                name: "Sari Dewi",
+                division: "HR",
+                position: "HR Manager",
+                email: "sari.dewi@company.com",
+                phone: "081234567891",
+                joinDate: "2022-03-10",
+                assets: "Laptop HP Pavilion, Printer Canon, Scanner"
+            },
+            {
+                id: 3,
+                name: "Budi Santoso",
+                division: "Finance",
+                position: "Financial Analyst",
+                email: "budi.santoso@company.com",
+                phone: "081234567892",
+                joinDate: "2023-06-01",
+                assets: "Laptop Lenovo ThinkPad, Kalkulator Scientific"
+            }
+        ];
+
+        let items = [
+            { id: 1, name: "Laptop Dell XPS 13", type: "Elektronik", stock: 5 },
+            { id: 2, name: "Mouse Wireless Logitech", type: "Elektronik", stock: 15 },
+            { id: 3, name: "Meja Kerja", type: "Furniture", stock: 8 },
+            { id: 4, name: "Kertas A4", type: "Alat Tulis", stock: 50 }
+        ];
+
+        let reports = [
+            {
+                id: 1,
+                date: "2024-01-15",
+                planning: "Implementasi sistem baru untuk HR",
+                pic: "Ahmad Rizki",
+                trouble: "Database connection timeout",
+                description: "Perlu optimasi query database",
+                status: "Proses"
+            },
+            {
+                id: 2,
+                date: "2024-01-14",
+                planning: "Update website company profile",
+                pic: "Sari Dewi",
+                trouble: "",
+                description: "Website berhasil diupdate sesuai timeline",
+                status: "Sudah"
+            }
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCurrentDate();
+            renderEmployees();
+            renderItems();
+            renderReports();
+        });
+
+        function updateCurrentDate() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            };
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('id-ID', options);
+        }
+
+        // Tab Management
+        function showTab(tabName) {
+            // Hide all content
+            document.getElementById('content-karyawan').classList.add('hidden');
+            document.getElementById('content-stok').classList.add('hidden');
+            document.getElementById('content-laporan').classList.add('hidden');
+
+            // Show selected content
+            document.getElementById('content-' + tabName).classList.remove('hidden');
+
+            // Update tab styles
+            const tabs = ['karyawan', 'stok', 'laporan'];
+            tabs.forEach(tab => {
+                const tabElement = document.getElementById('tab-' + tab);
+                if (tab === tabName) {
+                    tabElement.className = 'tab-active text-white px-6 py-4 text-sm font-medium rounded-t-lg transition-all duration-200';
+                } else {
+                    tabElement.className = 'bg-gray-100 text-gray-700 hover:bg-gray-200 px-6 py-4 text-sm font-medium rounded-t-lg transition-all duration-200';
+                }
+            });
+        }
+
+        // Employee Management
+        function renderEmployees() {
+            const container = document.getElementById('employeeCards');
+            const filter = document.getElementById('divisiFilter').value;
+            
+            let filteredEmployees = employees;
+            if (filter) {
+                filteredEmployees = employees.filter(emp => emp.division === filter);
+            }
+
+            container.innerHTML = filteredEmployees.map(emp => `
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover transition-all duration-200">
+                    <div class="flex items-center mb-4">
+                        <div class="w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl mr-4">
+                            ${emp.name.split(' ').map(n => n[0]).join('')}
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-900">${emp.name}</h3>
+                            <p class="text-indigo-600 font-medium">${emp.position}</p>
+                            <span class="inline-block bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full mt-1">${emp.division}</span>
+                        </div>
+                    </div>
+                    <div class="space-y-2 text-sm text-gray-600">
+                        <p><span class="font-medium">📧 Email:</span> ${emp.email}</p>
+                        <p><span class="font-medium">📱 Telepon:</span> ${emp.phone}</p>
+                        <p><span class="font-medium">📅 Bergabung:</span> ${new Date(emp.joinDate).toLocaleDateString('id-ID')}</p>
+                        <p><span class="font-medium">🏢 Aset:</span> ${emp.assets}</p>
+                    </div>
+                    <div class="mt-4 flex space-x-2">
+                        <button onclick="editEmployee(${emp.id})" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm transition-colors">
+                            ✏️ Edit
+                        </button>
+                        <button onclick="deleteEmployee(${emp.id})" class="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm transition-colors">
+                            🗑️ Hapus
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterByDivisi() {
+            renderEmployees();
+        }
+
+        function showAddEmployeeModal() {
+            document.getElementById('employeeModal').classList.remove('hidden');
+            if (!document.getElementById('employeeForm').dataset.editingId) {
+                document.getElementById('employeeForm').reset();
+                document.querySelector('#employeeModal h3').textContent = 'Tambah Karyawan Baru';
+                document.querySelector('#employeeForm button[type="submit"]').textContent = 'Simpan';
+            }
+        }
+
+        function closeEmployeeModal() {
+            document.getElementById('employeeModal').classList.add('hidden');
+            // Reset form and editing state
+            document.getElementById('employeeForm').reset();
+            delete document.getElementById('employeeForm').dataset.editingId;
+            document.querySelector('#employeeModal h3').textContent = 'Tambah Karyawan Baru';
+            document.querySelector('#employeeForm button[type="submit"]').textContent = 'Simpan';
+        }
+
+        document.getElementById('employeeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const editingId = this.dataset.editingId;
+            
+            if (editingId) {
+                // Update existing employee
+                const employeeIndex = employees.findIndex(emp => emp.id == editingId);
+                if (employeeIndex !== -1) {
+                    employees[employeeIndex] = {
+                        id: parseInt(editingId),
+                        name: document.getElementById('empName').value,
+                        division: document.getElementById('empDivision').value,
+                        position: document.getElementById('empPosition').value,
+                        email: document.getElementById('empEmail').value,
+                        phone: document.getElementById('empPhone').value,
+                        joinDate: document.getElementById('empJoinDate').value,
+                        assets: document.getElementById('empAssets').value
+                    };
+                }
+            } else {
+                // Add new employee
+                const newEmployee = {
+                    id: employees.length + 1,
+                    name: document.getElementById('empName').value,
+                    division: document.getElementById('empDivision').value,
+                    position: document.getElementById('empPosition').value,
+                    email: document.getElementById('empEmail').value,
+                    phone: document.getElementById('empPhone').value,
+                    joinDate: document.getElementById('empJoinDate').value,
+                    assets: document.getElementById('empAssets').value
+                };
+                employees.push(newEmployee);
+            }
+
+            renderEmployees();
+            closeEmployeeModal();
+        });
+
+        function editEmployee(id) {
+            const employee = employees.find(emp => emp.id === id);
+            if (employee) {
+                // Fill form with existing data
+                document.getElementById('empName').value = employee.name;
+                document.getElementById('empDivision').value = employee.division;
+                document.getElementById('empPosition').value = employee.position;
+                document.getElementById('empEmail').value = employee.email;
+                document.getElementById('empPhone').value = employee.phone;
+                document.getElementById('empJoinDate').value = employee.joinDate;
+                document.getElementById('empAssets').value = employee.assets;
+                
+                // Change modal title and button
+                document.querySelector('#employeeModal h3').textContent = 'Edit Data Karyawan';
+                document.querySelector('#employeeForm button[type="submit"]').textContent = 'Update';
+                
+                // Store editing ID
+                document.getElementById('employeeForm').dataset.editingId = id;
+                
+                showAddEmployeeModal();
+            }
+        }
+
+        function deleteEmployee(id) {
+            if (confirm('Apakah Anda yakin ingin menghapus karyawan ini?')) {
+                employees = employees.filter(emp => emp.id !== id);
+                renderEmployees();
+            }
+        }
+
+        // Item Management
+        function renderItems() {
+            const tbody = document.getElementById('stockTableBody');
+            tbody.innerHTML = items.map(item => `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.type}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">${item.stock}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${item.stock > 10 ? 'bg-green-100 text-green-800' : item.stock > 5 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}">
+                            ${item.stock > 10 ? 'Tersedia' : item.stock > 5 ? 'Terbatas' : 'Habis'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                        <button onclick="editItem(${item.id})" class="text-blue-600 hover:text-blue-900">✏️ Edit</button>
+                        <button onclick="deleteItem(${item.id})" class="text-red-600 hover:text-red-900">🗑️ Hapus</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function showAddItemModal() {
+            document.getElementById('itemModal').classList.remove('hidden');
+            if (!document.getElementById('itemForm').dataset.editingId) {
+                document.getElementById('itemForm').reset();
+                document.querySelector('#itemModal h3').textContent = 'Tambah Barang Baru';
+                document.querySelector('#itemForm button[type="submit"]').textContent = 'Simpan';
+            }
+        }
+
+        function closeItemModal() {
+            document.getElementById('itemModal').classList.add('hidden');
+            // Reset form and editing state
+            document.getElementById('itemForm').reset();
+            delete document.getElementById('itemForm').dataset.editingId;
+            document.querySelector('#itemModal h3').textContent = 'Tambah Barang Baru';
+            document.querySelector('#itemForm button[type="submit"]').textContent = 'Simpan';
+        }
+
+        document.getElementById('itemForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const editingId = this.dataset.editingId;
+            
+            if (editingId) {
+                // Update existing item
+                const itemIndex = items.findIndex(item => item.id == editingId);
+                if (itemIndex !== -1) {
+                    items[itemIndex] = {
+                        id: parseInt(editingId),
+                        name: document.getElementById('itemName').value,
+                        type: document.getElementById('itemType').value,
+                        stock: parseInt(document.getElementById('itemStock').value)
+                    };
+                }
+            } else {
+                // Add new item
+                const newItem = {
+                    id: items.length + 1,
+                    name: document.getElementById('itemName').value,
+                    type: document.getElementById('itemType').value,
+                    stock: parseInt(document.getElementById('itemStock').value)
+                };
+                items.push(newItem);
+            }
+
+            renderItems();
+            closeItemModal();
+        });
+
+        function editItem(id) {
+            const item = items.find(i => i.id === id);
+            if (item) {
+                // Fill form with existing data
+                document.getElementById('itemName').value = item.name;
+                document.getElementById('itemType').value = item.type;
+                document.getElementById('itemStock').value = item.stock;
+                
+                // Change modal title and button
+                document.querySelector('#itemModal h3').textContent = 'Edit Data Barang';
+                document.querySelector('#itemForm button[type="submit"]').textContent = 'Update';
+                
+                // Store editing ID
+                document.getElementById('itemForm').dataset.editingId = id;
+                
+                showAddItemModal();
+            }
+        }
+
+        function deleteItem(id) {
+            if (confirm('Apakah Anda yakin ingin menghapus barang ini?')) {
+                items = items.filter(item => item.id !== id);
+                renderItems();
+            }
+        }
+
+        // Report Management
+        function renderReports() {
+            const tbody = document.getElementById('reportTableBody');
+            tbody.innerHTML = reports.map(report => `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${new Date(report.date).toLocaleDateString('id-ID')}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">${report.planning}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${report.pic}</td>
+                    <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">${report.trouble || '-'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            report.status === 'Sudah' ? 'bg-green-100 text-green-800' : 
+                            report.status === 'Proses' ? 'bg-yellow-100 text-yellow-800' : 
+                            'bg-red-100 text-red-800'
+                        }">
+                            ${report.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                        <button onclick="editReport(${report.id})" class="text-blue-600 hover:text-blue-900">✏️ Edit</button>
+                        <button onclick="deleteReport(${report.id})" class="text-red-600 hover:text-red-900">🗑️ Hapus</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function showAddReportModal() {
+            document.getElementById('reportModal').classList.remove('hidden');
+            if (!document.getElementById('reportForm').dataset.editingId) {
+                document.getElementById('reportForm').reset();
+                document.querySelector('#reportModal h3').textContent = 'Tambah Laporan Pekerjaan';
+                document.querySelector('#reportForm button[type="submit"]').textContent = 'Simpan';
+                // Set today's date as default for new reports
+                document.getElementById('reportDate').value = new Date().toISOString().split('T')[0];
+            }
+        }
+
+        function closeReportModal() {
+            document.getElementById('reportModal').classList.add('hidden');
+            // Reset form and editing state
+            document.getElementById('reportForm').reset();
+            delete document.getElementById('reportForm').dataset.editingId;
+            document.querySelector('#reportModal h3').textContent = 'Tambah Laporan Pekerjaan';
+            document.querySelector('#reportForm button[type="submit"]').textContent = 'Simpan';
+        }
+
+        document.getElementById('reportForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const editingId = this.dataset.editingId;
+            
+            if (editingId) {
+                // Update existing report
+                const reportIndex = reports.findIndex(report => report.id == editingId);
+                if (reportIndex !== -1) {
+                    reports[reportIndex] = {
+                        id: parseInt(editingId),
+                        date: document.getElementById('reportDate').value,
+                        planning: document.getElementById('reportPlanning').value,
+                        pic: document.getElementById('reportPIC').value,
+                        trouble: document.getElementById('reportTrouble').value,
+                        description: document.getElementById('reportDescription').value,
+                        status: document.getElementById('reportStatus').value
+                    };
+                }
+            } else {
+                // Add new report
+                const newReport = {
+                    id: reports.length + 1,
+                    date: document.getElementById('reportDate').value,
+                    planning: document.getElementById('reportPlanning').value,
+                    pic: document.getElementById('reportPIC').value,
+                    trouble: document.getElementById('reportTrouble').value,
+                    description: document.getElementById('reportDescription').value,
+                    status: document.getElementById('reportStatus').value
+                };
+                reports.push(newReport);
+            }
+
+            renderReports();
+            closeReportModal();
+        });
+
+        function editReport(id) {
+            const report = reports.find(r => r.id === id);
+            if (report) {
+                // Fill form with existing data
+                document.getElementById('reportDate').value = report.date;
+                document.getElementById('reportPlanning').value = report.planning;
+                document.getElementById('reportPIC').value = report.pic;
+                document.getElementById('reportTrouble').value = report.trouble;
+                document.getElementById('reportDescription').value = report.description;
+                document.getElementById('reportStatus').value = report.status;
+                
+                // Change modal title and button
+                document.querySelector('#reportModal h3').textContent = 'Edit Laporan Pekerjaan';
+                document.querySelector('#reportForm button[type="submit"]').textContent = 'Update';
+                
+                // Store editing ID
+                document.getElementById('reportForm').dataset.editingId = id;
+                
+                showAddReportModal();
+            }
+        }
+
+        function deleteReport(id) {
+            if (confirm('Apakah Anda yakin ingin menghapus laporan ini?')) {
+                reports = reports.filter(report => report.id !== id);
+                renderReports();
+            }
+        }
+
+        // Close modals when clicking outside
+        window.addEventListener('click', function(e) {
+            const modals = ['employeeModal', 'itemModal', 'reportModal'];
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'980668af82bdce81',t:'MTc1ODA4OTA5NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
